@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloco de Notas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: linear-gradient(135deg, #8e44ad, #3498db);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 15px;
+        }
+
+        #title {
+            width: 80%;
+            padding: 10px 15px;
+            font-size: 1.2rem;
+            font-family: 'Roboto', Arial, sans-serif;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #333;
+            background: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .textarea-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 80%;
+            height: 70%;
+        }
+
+        textarea {
+            width: 48%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 1rem;
+            font-family: 'Roboto', Arial, sans-serif;
+            color: #333;
+            resize: none;
+            outline: none;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-family: 'Roboto', Arial, sans-serif;
+            background: linear-gradient(135deg, #000000, #808080); /* Gradiente de preto para cinza */
+            border: none;
+            border-radius: 8px;
+            color: #ffffff; /* Letras brancas */
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #404040, #a9a9a9); /* Gradiente mais claro no hover */
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+            transform: scale(1.05); /* Leve aumento ao passar o mouse */
+        }
+
+        button:active {
+            transform: scale(0.95); /* Leve diminuição ao clicar */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.7);
+            text-align: center;
+            padding: 10px 20px;
+            box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.3);
+            font-size: 0.9rem;
+        }
+
+        footer p {
+            margin: 0;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            #title {
+                width: 90%;
+                font-size: 1rem;
+            }
+
+            .textarea-container {
+                flex-direction: column;
+                width: 90%;
+                height: auto;
+            }
+
+            textarea {
+                width: 100%;
+                height: 150px;
+                font-size: 0.9rem;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.2rem;
+            }
+
+            #title {
+                font-size: 0.9rem;
+            }
+
+            button {
+                padding: 8px 16px;
+                font-size: 0.8rem;
+            }
+
+            textarea {
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Bloco de Notas</h1>
+    </header>
+    <div class="container">
+        <input id="title" type="text" placeholder="Digite o título aqui..." />
+        <div class="textarea-container">
+            <textarea id="note1" placeholder="Escreva suas anotações aqui..."></textarea>
+            <textarea id="note2" placeholder="Escreva mais anotações aqui..."></textarea>
+        </div>
+        <div class="btn-container">
+            <button id="savePdf">Salvar</button>
+        </div>
+    </div>
+    <footer>
+        <p>2024</p>
+    </footer>
+    <script>
+        const titleField = document.getElementById('title');
+        const noteArea1 = document.getElementById('note1');
+        const noteArea2 = document.getElementById('note2');
+        const savePdfButton = document.getElementById('savePdf');
+
+        // Apagar dados ao recarregar a página
+        window.addEventListener('load', () => {
+            titleField.value = '';
+            noteArea1.value = '';
+            noteArea2.value = '';
+        });
+
+        // Exportar para PDF
+        savePdfButton.addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                unit: 'mm',
+                format: 'a4',
+                orientation: 'portrait',
+            });
+
+            const marginTop = 25;
+            const marginLeft = 30;
+            const textWidth = pdf.internal.pageSize.width - marginLeft - 20;
+            const lineHeight = 10;
+
+            let yPosition = marginTop;
+
+            const title = titleField.value || 'Sem Título';
+            const note1 = noteArea1.value || '';
+            const note2 = noteArea2.value || '';
+
+            // Adicionar título
+            pdf.setFont('Arial', 'bold');
+            pdf.setFontSize(14);
+            const titleWidth = pdf.getTextWidth(title);
+            pdf.text(title, (pdf.internal.pageSize.width - titleWidth) / 2, yPosition);
+            yPosition += lineHeight + 5;
+
+            // Adicionar texto justificado
+            pdf.setFont('Arial', 'normal');
+            pdf.setFontSize(12);
+            const addJustifiedText = (text) => {
+                const lines = pdf.splitTextToSize(text, textWidth);
+                lines.forEach((line) => {
+                    if (yPosition + lineHeight > pdf.internal.pageSize.height - 25) {
+                        pdf.addPage();
+                        yPosition = marginTop;
+                    }
+                    pdf.text(line, marginLeft, yPosition);
+                    yPosition += lineHeight;
+                });
+            };
+
+            addJustifiedText(note1);
+            yPosition += 5;
+            addJustifiedText(note2);
+
+            pdf.save(`${title}.pdf`);
+        });
+    </script>
+</body>
+</html>
